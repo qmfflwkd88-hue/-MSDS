@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>화학물질 안전정보</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Malgun Gothic',sans-serif;background:#f0f4f8;min-height:100vh}
+
+.header{background:linear-gradient(135deg,#1a3a5c,#2563eb);color:white;padding:14px 16px;text-align:center;position:sticky;top:0;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.header h1{font-size:17px;font-weight:700}
+.header p{font-size:11px;opacity:.85;margin-top:3px}
+
+.tab-bar{display:flex;background:white;border-bottom:2px solid #e2e8f0;position:sticky;top:56px;z-index:190}
+.tab{flex:1;padding:11px 0;text-align:center;font-size:13px;font-weight:600;color:#94a3b8;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s}
+.tab.active{color:#2563eb;border-bottom-color:#2563eb}
+
+/* 검색 탭 */
+.search-wrap{padding:14px}
+.search-row{display:flex;gap:8px}
+.search-row input{flex:1;padding:11px 13px;border:2px solid #cbd5e1;border-radius:10px;font-size:15px;outline:none}
+.search-row input:focus{border-color:#2563eb}
+.search-row button{padding:11px 16px;background:#2563eb;color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer}
+.chips{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:5px 11px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;font-size:12px;color:#1d4ed8;cursor:pointer}
+
+/* 목록 탭 */
+.list-search{padding:12px 14px;background:white;border-bottom:1px solid #e2e8f0;position:sticky;top:98px;z-index:180}
+.list-search input{width:100%;padding:10px 13px;border:2px solid #cbd5e1;border-radius:10px;font-size:14px;outline:none}
+.list-search input:focus{border-color:#2563eb}
+
+.chem-list{background:white}
+.chem-item{padding:13px 16px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;cursor:pointer;transition:background .15s}
+.chem-item:active{background:#f0f4f8}
+.chem-item:last-child{border-bottom:none}
+.chem-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0;margin-right:12px}
+.num-high{background:#dc2626}
+.num-med{background:#d97706}
+.num-low{background:#059669}
+.chem-info{flex:1;min-width:0}
+.chem-name{font-size:14px;font-weight:600;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chem-sub{font-size:11px;color:#94a3b8;margin-top:2px}
+.chem-arrow{color:#cbd5e1;font-size:16px;flex-shrink:0;margin-left:8px}
+
+/* 결과/상세 공통 */
+.result-area{padding:14px}
+.empty-state{text-align:center;padding:50px 20px;color:#94a3b8}
+.empty-state .icon{font-size:44px;margin-bottom:12px}
+.empty-state p{font-size:14px;line-height:1.6}
+
+.multi-list{background:white;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.multi-item{padding:13px 16px;border-bottom:1px solid #f1f5f9;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.multi-item:last-child{border-bottom:none}
+.multi-item:active{background:#f8fafc}
+
+.card{background:white;border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);margin-bottom:12px}
+.card-head{padding:14px 16px;color:white;font-weight:700}
+.card-head .cn{font-size:16px}
+.card-head .cs{font-size:11px;opacity:.85;margin-top:3px}
+.bg-high{background:linear-gradient(135deg,#dc2626,#b91c1c)}
+.bg-med{background:linear-gradient(135deg,#d97706,#b45309)}
+.bg-low{background:linear-gradient(135deg,#059669,#047857)}
+
+.badges{padding:9px 14px;display:flex;flex-wrap:wrap;gap:5px;background:#f8fafc;border-bottom:1px solid #e2e8f0}
+.badge{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.br{background:#fee2e2;color:#dc2626}
+.bo{background:#ffedd5;color:#ea580c}
+.bb{background:#dbeafe;color:#1d4ed8}
+.bg{background:#dcfce7;color:#16a34a}
+.bgy{background:#f1f5f9;color:#475569}
+
+.alert{padding:10px 14px;font-size:12px;line-height:1.5;border-left:4px solid}
+.alert-red{background:#fef2f2;border-color:#dc2626;color:#7f1d1d;margin:8px 14px;border-radius:0 6px 6px 0}
+.alert-ora{background:#fffbeb;border-color:#d97706;color:#78350f;margin:8px 14px;border-radius:0 6px 6px 0}
+.alert-blu{background:#eff6ff;border-color:#2563eb;color:#1e3a8a;margin:4px 14px 4px;border-radius:0 6px 6px 0}
+
+.sec-btn{width:100%;padding:11px 14px;background:none;border:none;border-bottom:1px solid #f1f5f9;text-align:left;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-size:13px;font-weight:600;color:#1e293b}
+.sec-body{padding:0 14px 12px;display:none}
+.sec-body.open{display:block}
+.arr{color:#94a3b8;font-size:11px;transition:transform .2s}
+.arr.open{transform:rotate(180deg)}
+
+.irow{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f8fafc;font-size:13px}
+.irow:last-child{border-bottom:none}
+.il{color:#64748b;flex:1}
+.iv{color:#1e293b;font-weight:500;flex:1.2;text-align:right}
+.iv.red{color:#dc2626}
+
+.ppe-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.ppe-i{background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:8px;text-align:center;font-size:11px;color:#0c4a6e}
+.ppe-icon{font-size:20px;display:block;margin-bottom:3px}
+
+.emg-title{font-size:13px;font-weight:700;color:#1e293b;margin:8px 0 4px}
+
+.back-btn{display:flex;align-items:center;gap:6px;padding:10px 14px;background:white;border:none;border-bottom:1px solid #e2e8f0;font-size:13px;color:#2563eb;cursor:pointer;width:100%}
+
+.disclaimer{margin:12px 14px;padding:10px 12px;background:#fefce8;border:1px solid #fde047;border-radius:8px;font-size:11px;color:#713f12;text-align:center;line-height:1.5}
+
+.no-result{background:white;border-radius:12px;padding:28px 20px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.no-result .icon{font-size:36px;margin-bottom:10px}
+.no-result p{color:#64748b;font-size:13px;line-height:1.6}
+
+/* 통계 */
+.stat-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat-card{background:white;border-radius:12px;padding:16px 14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.stat-card.today{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:white}
+.stat-num{font-size:30px;font-weight:800;line-height:1.1}
+.stat-label{font-size:12px;margin-top:5px;opacity:.85}
+.stat-section{background:white;border-radius:12px;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,.07);margin-bottom:14px}
+.stat-section h3{font-size:14px;color:#1e293b;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.rank-row{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid #f1f5f9}
+.rank-row:last-child{border-bottom:none}
+.rank-badge{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;margin-right:10px;flex-shrink:0}
+.rank-1{background:#fbbf24}
+.rank-2{background:#94a3b8}
+.rank-3{background:#d97706}
+.rank-n{background:#cbd5e1}
+.rank-name{flex:1;font-size:13px;color:#1e293b;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rank-count{font-size:13px;color:#2563eb;font-weight:700;margin-left:8px;flex-shrink:0}
+.stat-empty{text-align:center;color:#94a3b8;font-size:13px;padding:20px}
+.reset-btn{width:100%;padding:11px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;margin-top:4px}
+.stat-note{font-size:11px;color:#94a3b8;text-align:center;line-height:1.5;margin-top:10px}
+.msds-src{margin:8px 14px 0;padding:7px 12px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;font-size:11px;color:#047857;font-weight:600}
+.warn-sig{display:inline-block;padding:4px 14px;border-radius:6px;font-size:13px;font-weight:700;margin:2px 0 6px}
+.ghs-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:4px 0 8px}
+.ghs-pic{width:54px;height:54px;flex-shrink:0;object-fit:contain;display:block}
+.ghs-sig{padding:4px 12px;border-radius:6px;font-size:13px;font-weight:700;margin-left:2px}
+.sig-danger{background:#dc2626;color:#fff}
+.sig-warn{background:#d97706;color:#fff}
+.nfpa-box{display:inline-flex;gap:6px;margin-top:4px}
+.nfpa-box span{padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;color:#fff}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚗️ 화학물질 안전정보</h1>
+  <p>동국생명과학 안성공장 | PSM-211/212 | 52종</p>
+</div>
+
+<div class="tab-bar">
+  <div class="tab active" id="tab-search" onclick="switchTab('search')">🔍 검색</div>
+  <div class="tab" id="tab-list" onclick="switchTab('list')">📋 전체목록</div>
+  <div class="tab" id="tab-stats" onclick="switchTab('stats')">📊 통계</div>
+</div>
+
+<!-- 검색 탭 -->
+<div id="page-search">
+  <div class="search-wrap">
+    <div class="search-row">
+      <input type="text" id="searchInput" placeholder="물질명, CAS No., 약어 입력" autocomplete="off"/>
+      <button onclick="doSearch()">검색</button>
+    </div>
+    <div class="chips">
+      <span class="chip" onclick="qs('염화티오닐')">염화티오닐</span>
+      <span class="chip" onclick="qs('아세톤')">아세톤</span>
+      <span class="chip" onclick="qs('메탄올')">메탄올</span>
+      <span class="chip" onclick="qs('황산')">황산</span>
+      <span class="chip" onclick="qs('염산')">염산</span>
+      <span class="chip" onclick="qs('DMAC')">DMAC</span>
+      <span class="chip" onclick="qs('IPA')">IPA</span>
+      <span class="chip" onclick="qs('THF')">THF</span>
+      <span class="chip" onclick="qs('DMF')">DMF</span>
+      <span class="chip" onclick="qs('산화프로필렌')">산화프로필렌</span>
+    </div>
+  </div>
+  <div id="resultArea">
+    <div class="empty-state">
+      <div class="icon">🔍</div>
+      <p>화학물질명 또는 CAS No.를 입력하세요<br>취급 전 반드시 안전정보를 확인하세요</p>
+    </div>
+  </div>
+  <div class="disclaimer">⚠️ 긴급상황 시 119 신고 및 안전관리자에게 즉시 연락</div>
+</div>
+
+<!-- 목록 탭 -->
+<div id="page-list" style="display:none">
+  <div class="list-search">
+    <input type="text" id="listInput" placeholder="목록에서 물질명 검색..." oninput="filterList()" autocomplete="off"/>
+  </div>
+  <div id="chemList" class="chem-list"></div>
+</div>
+
+<!-- 통계 탭 -->
+<div id="page-stats" style="display:none">
+  <div id="statsArea" style="padding:14px"></div>
+</div>
+
+<!-- 화학물질 데이터 + 그림문자 (같은 폴더에 함께 업로드) -->
+<script src="msds_data.js"></script>
+<script src="msds_pict.js"></script>
+<script>
+function pictSVG(code){var u=PICT[code];return u?'<img src="'+u+'" class="ghs-pic" alt="'+code+'">':'';}
+
+function dlColor(dl){return dl==='high'?'bg-high':dl==='med'?'bg-med':'bg-low'}
+function dlNum(dl){return dl==='high'?'num-high':dl==='med'?'num-med':'num-low'}
+function dlLabel(dl){return dl==='high'?'고위험':dl==='med'?'주의':'저위험'}
+
+function switchTab(t){
+  document.getElementById('tab-search').classList.toggle('active',t==='search');
+  document.getElementById('tab-list').classList.toggle('active',t==='list');
+  document.getElementById('tab-stats').classList.toggle('active',t==='stats');
+  document.getElementById('page-search').style.display=t==='search'?'':'none';
+  document.getElementById('page-list').style.display=t==='list'?'':'none';
+  document.getElementById('page-stats').style.display=t==='stats'?'':'none';
+  if(t==='list') renderList('');
+  if(t==='stats') renderStats();
+}
+
+// ===== 사용 카운트 (localStorage 기반) =====
+function todayKey(){
+  const d=new Date();
+  return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+}
+function getStats(){
+  try{
+    return JSON.parse(localStorage.getItem('msds_stats')||'{}');
+  }catch(e){return {};}
+}
+function saveStats(s){
+  try{localStorage.setItem('msds_stats',JSON.stringify(s));}catch(e){}
+}
+function countView(id){
+  const s=getStats();
+  s.total=(s.total||0)+1;
+  s.todayDate=s.todayDate||todayKey();
+  if(s.todayDate!==todayKey()){s.todayDate=todayKey();s.today=0;}
+  s.today=(s.today||0)+1;
+  s.perChem=s.perChem||{};
+  s.perChem[id]=(s.perChem[id]||0)+1;
+  saveStats(s);
+}
+function renderStats(){
+  const s=getStats();
+  // 오늘 날짜 체크
+  if(s.todayDate && s.todayDate!==todayKey()){s.today=0;}
+  const total=s.total||0;
+  const today=s.today||0;
+  const perChem=s.perChem||{};
+
+  // TOP5 계산
+  const ranked=Object.entries(perChem)
+    .map(([id,cnt])=>({chem:DB.find(c=>c.id===parseInt(id)),cnt}))
+    .filter(x=>x.chem)
+    .sort((a,b)=>b.cnt-a.cnt)
+    .slice(0,5);
+
+  let rankHtml;
+  if(ranked.length===0){
+    rankHtml=`<div class="stat-empty">아직 조회 기록이 없습니다</div>`;
+  }else{
+    rankHtml=ranked.map((r,i)=>`
+      <div class="rank-row" onclick="goDetail(${r.chem.id})" style="cursor:pointer">
+        <div class="rank-badge ${i<3?'rank-'+(i+1):'rank-n'}">${i+1}</div>
+        <div class="rank-name">${r.chem.name}</div>
+        <div class="rank-count">${r.cnt}회</div>
+      </div>`).join('');
+  }
+
+  document.getElementById('statsArea').innerHTML=`
+    <div class="stat-cards">
+      <div class="stat-card today">
+        <div class="stat-num">${today}</div>
+        <div class="stat-label">오늘 조회</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">${total}</div>
+        <div class="stat-label">누적 조회</div>
+      </div>
+    </div>
+    <div class="stat-section">
+      <h3>🔥 많이 찾은 물질 TOP 5</h3>
+      ${rankHtml}
+    </div>
+    <button class="reset-btn" onclick="resetStats()">통계 초기화</button>
+    <div class="stat-note">⚠️ 이 통계는 현재 기기(브라우저)에만 저장됩니다.<br>전 직원 합산은 사내 서버 적용 시 가능합니다.</div>
+  `;
+}
+function resetStats(){
+  if(confirm('통계를 초기화하시겠습니까?')){
+    localStorage.removeItem('msds_stats');
+    renderStats();
+  }
+}
+function goDetail(id){
+  switchTab('search');
+  showDetail(id,false);
+}
+
+function renderList(q){
+  const items = q ? DB.filter(c=>c.name.toLowerCase().includes(q.toLowerCase())||c.cas.includes(q)||(c.alias||[]).some(a=>a.toLowerCase().includes(q.toLowerCase()))) : DB;
+  document.getElementById('chemList').innerHTML = items.map(c=>`
+    <div class="chem-item" onclick="showDetail(${c.id})">
+      <div class="chem-num ${dlNum(c.dl)}">${c.id}</div>
+      <div class="chem-info">
+        <div class="chem-name">${c.name}</div>
+        <div class="chem-sub">CAS: ${c.cas} | ${c.usage} | ${dlLabel(c.dl)}</div>
+      </div>
+      <div class="chem-arrow">›</div>
+    </div>`).join('');
+}
+
+function filterList(){renderList(document.getElementById('listInput').value)}
+
+function getPPE(c){
+  const ppe=[{i:'🥽',l:'보안경/안면보호구'}];
+  const corr=(c.corr||'').toLowerCase();
+  const h=(c.hazard||[]).join(' ').toLowerCase();
+  if(corr.includes('부식')||h.includes('부식')) ppe.push({i:'🧤',l:'내화학성 장갑'},{i:'🦺',l:'내화학성 보호복'});
+  else ppe.push({i:'🧤',l:'보호장갑'});
+  if(h.includes('흡입')||typeof c.lel==='number') ppe.push({i:'😷',l:'방독마스크'});
+  if(typeof c.flash==='number'&&c.flash<23) ppe.push({i:'🔥',l:'방염복'});
+  if(c.dl==='high') ppe.push({i:'👢',l:'내화학성 안전화'});
+  return ppe.slice(0,6);
+}
+
+function getEmg(c){
+  const res=[];
+  const rct=(c.reaction||'').toLowerCase();
+  const nowater=rct.includes('물')&&(rct.includes('금지')||rct.includes('반응'));
+  res.push({t:'누출 시',a:['즉시 해당구역 인원 대피','안전관리자·119 신고','바람을 등지고 접근',nowater?'⚠️ 물 사용 금지! 건조한 모래/흡착제로 처리':'누출물 흡착제 회수 후 폐기물 처리','충분한 환기 후 복구 작업']});
+  if(typeof c.flash==='number'||c.flash==='상온 불연성') res.push({t:'화재 시',a:['전원 차단 후 초기소화 시도','CO₂소화기 또는 건조분말 소화기 사용','⚠️ 물 분무 금지(비산 위험)','대형화재 즉시 대피 후 119 신고']});
+  res.push({t:'피부 접촉 시',a:['오염 의복 즉시 제거','흐르는 물로 15분 이상 세척',c.dl==='high'?'⚠️ 즉시 의료기관 방문':'증상 지속 시 의료기관 방문','오염 의복 재사용 금지']});
+  if((c.hazard||[]).some(h=>h.includes('흡입'))||c.dl==='high') res.push({t:'흡입 시',a:['즉시 신선한 공기 장소로 이동','호흡곤란 시 인공호흡(CPR)','의식 없으면 119 즉시 신고',c.dl==='high'?'⚠️ 증상 없어도 즉시 의료기관 방문':'증상 지속 시 의료기관 방문']});
+  return res;
+}
+
+function tog(id){
+  const b=document.getElementById('sb'+id);
+  const a=document.getElementById('sa'+id);
+  b.classList.toggle('open');
+  a.classList.toggle('open');
+}
+
+function showDetail(id,fromList){
+  const c=DB.find(x=>x.id===id);
+  if(!c) return;
+  countView(id);
+  const ppe=getPPE(c);
+  const emg=getEmg(c);
+  const sid='c'+id;
+  const psmbadge=c.psmt?'<span class="badge br">PSM대상</span>':'';
+  const toxbadge=c.toxt?'<span class="badge br">유독물질</span>':'';
+  const accbadge=c.acct?'<span class="badge br">사고대비물질</span>':'';
+
+
+  // 공식 MSDS 검증 블록 (4·5·6·8·10항) - 사고대응 중심, 상단 배치
+  let msdsBlock='';
+  if(c.msdsVer){
+    const fa=c.fa||{};
+    msdsBlock=`
+      <div class="msds-src">✅ 업체 MSDS 기준 · ${c.msdsSrc}</div>
+${c.warn?`
+      <button class="sec-btn" onclick="tog('${sid}_warn')"><span>🏷️ 경고표지 (2항)</span><span class="arr open" id="sa${sid}_warn">▼</span></button>
+      <div class="sec-body open" id="sb${sid}_warn">
+        <div class="ghs-row">${(c.pict||[]).map(p=>pictSVG(p)).join('')}<span class="ghs-sig ${c.warn.sig==='위험'?'sig-danger':'sig-warn'}">${c.warn.sig}</span></div>
+        <div class="emg-title">GHS 분류</div>
+        ${c.warn.cls.map(x=>`<div class="alert alert-ora">• ${x}</div>`).join('')}
+        <div class="emg-title">유해·위험문구 (H)</div>
+        ${c.warn.h.map(x=>`<div class="alert alert-red">• ${x}</div>`).join('')}
+        ${c.nfpa?`<div class="emg-title">NFPA 등급</div><div class="alert alert-blu">${c.nfpa}</div>`:''}
+      </div>`:''}
+
+      <button class="sec-btn" onclick="tog('${sid}_spill')"><span>🚨 누출 시 대응 (6항)</span><span class="arr open" id="sa${sid}_spill">▼</span></button>
+      <div class="sec-body open" id="sb${sid}_spill">
+        ${(c.spill||[]).map(s=>`<div class="alert ${s.includes('⚠️')?'alert-red':'alert-blu'}">• ${s}</div>`).join('')}
+      </div>
+
+      <button class="sec-btn" onclick="tog('${sid}_avoid')"><span>⚠️ 혼촉금지·반응성 (10항)</span><span class="arr open" id="sa${sid}_avoid">▼</span></button>
+      <div class="sec-body open" id="sb${sid}_avoid">
+        <div class="alert alert-red">🚫 피해야 할 물질: ${c.avoid.mat}</div>
+        <div class="alert alert-ora">⚠️ 피해야 할 조건: ${c.avoid.cond}</div>
+      </div>
+
+      <button class="sec-btn" onclick="tog('${sid}_fa')"><span>🩹 응급조치 (4항)</span><span class="arr open" id="sa${sid}_fa">▼</span></button>
+      <div class="sec-body open" id="sb${sid}_fa">
+        <div class="emg-title">👁 눈에 들어갔을 때</div><div class="alert alert-blu">${fa.eye}</div>
+        <div class="emg-title">✋ 피부에 접촉했을 때</div><div class="alert alert-blu">${fa.skin}</div>
+        <div class="emg-title">🫁 흡입했을 때</div><div class="alert alert-blu">${fa.inh}</div>
+        <div class="emg-title">👄 먹었을 때</div><div class="alert alert-blu">${fa.ing}</div>
+      </div>
+
+      <button class="sec-btn" onclick="tog('${sid}_fire2')"><span>🔥 소화 방법 (5항)</span><span class="arr" id="sa${sid}_fire2">▼</span></button>
+      <div class="sec-body" id="sb${sid}_fire2">
+        <div class="alert alert-blu">✅ 적절한 소화제: ${c.fire.ok}</div>
+        <div class="alert alert-red">🚫 부적절한 소화제: ${c.fire.no}</div>
+        <div class="alert alert-ora">⚠️ 특정 유해성: ${c.fire.haz}</div>
+      </div>
+
+      <button class="sec-btn" onclick="tog('${sid}_ppe2')"><span>🦺 보호구 (8항)</span><span class="arr open" id="sa${sid}_ppe2">▼</span></button>
+      <div class="sec-body open" id="sb${sid}_ppe2">
+        <div class="emg-title">호흡기 보호</div><div class="alert alert-blu">${c.ppe.resp}</div>
+        <div class="emg-title">눈 보호</div><div class="alert alert-blu">${c.ppe.eye}</div>
+        <div class="emg-title">손 보호</div><div class="alert alert-blu">${c.ppe.hand}</div>
+        <div class="emg-title">신체 보호</div><div class="alert alert-blu">${c.ppe.body}</div>
+      </div>
+    `;
+  }
+
+  // 미검증 물질용 기존 자동생성 보호구·응급조치
+  let legacyBlock='';
+  if(!c.msdsVer){
+    legacyBlock=`
+      <button class="sec-btn" onclick="tog('${sid}_ppe')"><span>🦺 필수 보호구 (PPE)</span><span class="arr open" id="sa${sid}_ppe">▼</span></button>
+      <div class="sec-body open" id="sb${sid}_ppe">
+        <div class="ppe-grid">${ppe.map(p=>`<div class="ppe-i"><span class="ppe-icon">${p.i}</span>${p.l}</div>`).join('')}</div>
+      </div>
+
+      <button class="sec-btn" onclick="tog('${sid}_emg')"><span>🚨 사고 시 응급조치</span><span class="arr open" id="sa${sid}_emg">▼</span></button>
+      <div class="sec-body open" id="sb${sid}_emg">
+        ${emg.map(e=>`<div class="emg-title">${e.t}</div>${e.a.map(a=>`<div class="alert alert-blu">• ${a}</div>`).join('')}`).join('')}
+      </div>
+    `;
+  }
+
+  const html=`
+    ${fromList?`<button class="back-btn" onclick="switchTab('list')">‹ 목록으로</button>`:''}
+    <div class="result-area" style="padding-top:8px">
+    <div class="card">
+      <div class="card-head ${dlColor(c.dl)}">
+        <div class="cn">${c.name}</div>
+        <div class="cs">CAS: ${c.cas} | ${c.state} ${c.conc} | ${c.psm} | 용도: ${c.usage}</div>
+      </div>
+      <div class="badges">
+        <span class="badge ${c.dl==='high'?'br':'bo'}">${dlLabel(c.dl)}</span>
+        ${psmbadge}${toxbadge}${accbadge}
+      </div>
+      ${c.reaction?`<div class="alert ${c.dl==='high'?'alert-red':'alert-ora'}">${c.reaction}</div>`:''}
+      ${msdsBlock}
+
+      <button class="sec-btn" onclick="tog('${sid}_exp')"><span>📊 노출기준 (TWA/STEL)</span><span class="arr" id="sa${sid}_exp">▼</span></button>
+      <div class="sec-body" id="sb${sid}_exp">
+        <div class="irow"><span class="il">TWA (8시간)</span><span class="iv ${c.twa!=='자료없음'?'red':''}">${c.twa}</span></div>
+        <div class="irow"><span class="il">STEL (단시간)</span><span class="iv">${c.stel}</span></div>
+      </div>
+
+      <button class="sec-btn" onclick="tog('${sid}_fire')"><span>🔥 인화·폭발 정보</span><span class="arr" id="sa${sid}_fire">▼</span></button>
+      <div class="sec-body" id="sb${sid}_fire">
+        <div class="irow"><span class="il">인화점</span><span class="iv ${typeof c.flash==='number'&&c.flash<23?'red':''}">${c.flash}${typeof c.flash==='number'?'℃':''}</span></div>
+        <div class="irow"><span class="il">발화점</span><span class="iv">${c.ign}${typeof c.ign==='number'?'℃':''}</span></div>
+        <div class="irow"><span class="il">폭발하한(LEL)</span><span class="iv">${c.lel}${typeof c.lel==='number'?'%':''}</span></div>
+        <div class="irow"><span class="il">폭발상한(UEL)</span><span class="iv">${c.uel}${typeof c.uel==='number'?'%':''}</span></div>
+      </div>
+
+      <button class="sec-btn" onclick="tog('${sid}_tox')"><span>☠️ 독성 정보 (LD50)</span><span class="arr" id="sa${sid}_tox">▼</span></button>
+      <div class="sec-body" id="sb${sid}_tox">
+        <div class="irow"><span class="il">경구(먹었을 때)</span><span class="iv">${c.oral}</span></div>
+        <div class="irow"><span class="il">경피(피부접촉)</span><span class="iv">${c.dermal}</span></div>
+        <div class="irow"><span class="il">흡입</span><span class="iv">${c.inhal}</span></div>
+      </div>
+
+      <button class="sec-btn" onclick="tog('${sid}_stor')"><span>🏭 취급·저장량</span><span class="arr" id="sa${sid}_stor">▼</span></button>
+      <div class="sec-body" id="sb${sid}_stor">
+        <div class="irow"><span class="il">연간 취급량</span><span class="iv">${c.ann}</span></div>
+        <div class="irow"><span class="il">일일 취급량</span><span class="iv">${c.day}</span></div>
+        <div class="irow"><span class="il">최대 저장량</span><span class="iv">${c.maxs}</span></div>
+      </div>
+      ${legacyBlock}
+    </div>
+    <div class="disclaimer">⚠️ 긴급상황 시 119 신고 및 안전관리자에게 즉시 연락</div>
+    </div>`;
+
+  if(fromList){
+    document.getElementById('page-list').innerHTML=html;
+  } else {
+    document.getElementById('resultArea').innerHTML=html;
+  }
+  window.scrollTo(0,0);
+}
+
+function search(q){
+  if(!q) return [];
+  const lq=q.toLowerCase();
+  return DB.filter(c=>
+    c.name.toLowerCase().includes(lq)||
+    c.cas.toLowerCase().includes(lq)||
+    (c.alias||[]).some(a=>a.toLowerCase().includes(lq))
+  );
+}
+
+function renderSearchResult(results){
+  const area=document.getElementById('resultArea');
+  if(!results.length){
+    area.innerHTML=`<div class="no-result"><div class="icon">🔎</div><p>검색 결과가 없습니다.<br>물질명·CAS No.·약어로 검색하세요</p></div>`;
+    return;
+  }
+  if(results.length===1){showDetail(results[0].id,false);return;}
+  area.innerHTML=`
+    <div style="font-size:13px;color:#64748b;margin-bottom:8px;padding:0 2px">${results.length}개 물질이 검색됐습니다:</div>
+    <div class="multi-list">
+      ${results.map(r=>`
+        <div class="multi-item" onclick="showDetail(${r.id},false)">
+          <div><div style="font-size:14px;font-weight:600;color:#1e293b">${r.name}</div><div style="font-size:11px;color:#94a3b8;margin-top:2px">CAS: ${r.cas}</div></div>
+          <span style="color:#cbd5e1">›</span>
+        </div>`).join('')}
+    </div>`;
+}
+
+function doSearch(){
+  const q=document.getElementById('searchInput').value.trim();
+  renderSearchResult(search(q));
+}
+
+function qs(n){
+  document.getElementById('searchInput').value=n;
+  doSearch();
+  window.scrollTo(0,0);
+}
+
+document.getElementById('searchInput').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch()});
+</script>
+</body>
+</html>
