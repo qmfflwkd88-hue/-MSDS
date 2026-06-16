@@ -291,7 +291,7 @@ function goDetail(id){
 function renderList(q){
   const items = q ? DB.filter(c=>c.name.toLowerCase().includes(q.toLowerCase())||c.cas.includes(q)||(c.alias||[]).some(a=>a.toLowerCase().includes(q.toLowerCase()))) : DB;
   document.getElementById('chemList').innerHTML = items.map(c=>`
-    <div class="chem-item" onclick="showDetail(${c.id})">
+    <div class="chem-item" onclick="goDetail(${c.id})">
       <div class="chem-num ${dlNum(c.dl)}">${c.id}</div>
       <div class="chem-info">
         <div class="chem-name">${c.name}</div>
