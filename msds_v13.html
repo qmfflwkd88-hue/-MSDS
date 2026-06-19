@@ -212,14 +212,6 @@ function switchTab(t){
 // ===== Firebase Realtime Database 통계 =====
 const FB_URL='https://msds-stats-default-rtdb.asia-southeast1.firebasedatabase.app';
 
-// ===== 호흡용 보호구 그림 매칭 =====
-// 반응기 맨홀 개방 투입 시 내부 액체 증기 노출 가능성 고려, 분진 위험보다 안전한 방독마스크로 통일
-const GASMASK_IDS=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,23,24,25,26,27,28,29,30,31,32,33,34,35,40,41,42,43,44,45,46,47,48,49,50,51,52];
-function respImg(id){
-  if(GASMASK_IDS.includes(id)) return PPE.GASMASK;
-  return null; // 22,36,37,38,39번 등 애매한 물질은 그림 없이 텍스트만
-}
-
 function todayKey(){
   const d=new Date();
   return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
@@ -400,10 +392,10 @@ ${c.warn?`
 
       <button class="sec-btn" onclick="tog('${sid}_ppe2')"><span>🦺 보호구 (8항)</span><span class="arr open" id="sa${sid}_ppe2">▼</span></button>
       <div class="sec-body open" id="sb${sid}_ppe2">
-        <div class="emg-title">${respImg(c.id)?`<img src="${respImg(c.id)}" class="ppe-thumb" alt="호흡보호구">`:''}호흡기 보호</div><div class="alert alert-blu">${c.ppe.resp}</div>
-        <div class="emg-title"><img src="${PPE.GOGGLE}" class="ppe-thumb" alt="눈보호구">눈 보호</div><div class="alert alert-blu">${c.ppe.eye}</div>
-        <div class="emg-title"><img src="${PPE.GLOVE}" class="ppe-thumb" alt="손보호구">손 보호</div><div class="alert alert-blu">${c.ppe.hand}</div>
-        <div class="emg-title"><img src="${PPE.SUIT}" class="ppe-thumb" alt="신체보호구">신체 보호</div><div class="alert alert-blu">${c.ppe.body}</div>
+        <div class="emg-title">호흡기 보호</div><div class="alert alert-blu">${c.ppe.resp}</div>
+        <div class="emg-title">눈 보호</div><div class="alert alert-blu">${c.ppe.eye}</div>
+        <div class="emg-title">손 보호</div><div class="alert alert-blu">${c.ppe.hand}</div>
+        <div class="emg-title">신체 보호</div><div class="alert alert-blu">${c.ppe.body}</div>
       </div>
     `;
   }
