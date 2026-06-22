@@ -130,6 +130,15 @@ body{font-family:'Malgun Gothic',sans-serif;background:#f0f4f8;min-height:100vh}
 .stat-empty{text-align:center;color:#94a3b8;font-size:13px;padding:20px}
 .reset-btn{width:100%;padding:11px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;margin-top:4px}
 .stat-note{font-size:11px;color:#94a3b8;text-align:center;line-height:1.5;margin-top:10px}
+.check-box{padding:0 14px 20px}
+.check-btn{width:100%;padding:12px;background:#1e293b;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
+.check-btn:active{background:#0f172a}
+.check-result-box{margin-top:12px;background:white;border-radius:12px;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+.check-ok-title{font-size:13px;font-weight:700;color:#16a34a;margin-bottom:6px}
+.check-ok-item{font-size:12px;color:#475569;padding:4px 0 4px 8px;border-left:2px solid #16a34a;margin-bottom:4px}
+.check-warn-title{font-size:13px;font-weight:700;color:#dc2626;margin:12px 0 6px}
+.check-warn-item{font-size:12px;color:#991b1b;padding:4px 0 4px 8px;border-left:2px solid #dc2626;margin-bottom:4px;background:#fef2f2}
+.check-time{font-size:10px;color:#94a3b8;text-align:right;margin-top:10px}
 .msds-src{margin:8px 14px 0;padding:7px 12px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;font-size:11px;color:#047857;font-weight:600}
 .warn-sig{display:inline-block;padding:4px 14px;border-radius:6px;font-size:13px;font-weight:700;margin:2px 0 6px}
 .ghs-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:4px 0 8px}
@@ -198,6 +207,10 @@ body{font-family:'Malgun Gothic',sans-serif;background:#f0f4f8;min-height:100vh}
 <!-- 통계 탭 -->
 <div id="page-stats" style="display:none">
   <div id="statsArea" style="padding:14px"></div>
+  <div class="check-box">
+    <button class="check-btn" onclick="runDataCheck()">🔍 데이터 점검 실행</button>
+    <div id="checkResult"></div>
+  </div>
 </div>
 
 <!-- 화학물질 데이터 + 그림문자 (같은 폴더에 함께 업로드) -->
@@ -305,6 +318,62 @@ async function renderStats(){
     document.getElementById('statsArea').innerHTML=`<div class="stat-empty">통계를 불러오지 못했습니다</div>`;
   }
 }
+
+// ===== 데이터 무결성 자체 점검 =====
+function runDataCheck(){
+  const issues = [];
+  const oks = [];
+
+  // 1. 전체 개수
+  oks.push(`전체 ${DB.length}종 등록됨`);
+
+  // 2. ID 중복 검사
+  const idCounts = {};
+  DB.forEach(c=>{ idCounts[c.id]=(idCounts[c.id]||0)+1; });
+  const dupIds = Object.entries(idCounts).filter(([id,cnt])=>cnt>1).map(([id])=>id);
+  if(dupIds.length>0) issues.push(`ID 중복: ${dupIds.join(', ')}번`);
+  else oks.push('ID 중복 없음');
+
+  // 3. 필수 필드 빈값 검사
+  const requiredFields = ['name','cas','state','ppe'];
+  const missing = [];
+  DB.forEach(c=>{
+    requiredFields.forEach(f=>{
+      if(!c[f] || (typeof c[f]==='string' && c[f].trim()==='')){
+        missing.push(`${c.id}번(${c.name||'이름없음'}) - ${f} 누락`);
+      }
+    });
+    if(c.ppe){
+      ['resp','eye','hand','body'].forEach(p=>{
+        if(!c.ppe[p] || c.ppe[p].trim()===''){
+          missing.push(`${c.id}번(${c.name}) - ppe.${p} 누락`);
+        }
+      });
+    }
+  });
+  if(missing.length>0) issues.push(...missing.map(m=>`필드 누락: ${m}`));
+  else oks.push('필수 항목(이름/CAS/상태/보호구) 빈값 없음');
+
+  // 4. CAS 번호 형식 간단 검사 (숫자-숫자-숫자 패턴)
+  const badCas = DB.filter(c=>c.cas && !/^\d{1,7}-\d{2}-\d$/.test(c.cas) && c.cas!=='해당없음');
+  if(badCas.length>0) issues.push(...badCas.map(c=>`CAS 형식 의심: ${c.id}번(${c.name}) - "${c.cas}"`));
+  else oks.push('CAS 번호 형식 정상');
+
+  // 결과 렌더링
+  const resultHtml = `
+    <div class="check-result-box">
+      <div class="check-ok-title">✅ 정상 항목 (${oks.length})</div>
+      ${oks.map(o=>`<div class="check-ok-item">${o}</div>`).join('')}
+      ${issues.length>0?`
+        <div class="check-warn-title">⚠️ 확인 필요 (${issues.length})</div>
+        ${issues.map(i=>`<div class="check-warn-item">${i}</div>`).join('')}
+      `:`<div class="check-warn-title" style="color:#16a34a">⚠️ 발견된 문제 없음</div>`}
+      <div class="check-time">점검 시각: ${new Date().toLocaleString('ko-KR')}</div>
+    </div>
+  `;
+  document.getElementById('checkResult').innerHTML = resultHtml;
+}
+
 function goDetail(id){
   switchTab('search');
   showDetail(id,false);
