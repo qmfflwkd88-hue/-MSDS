@@ -97,6 +97,10 @@ body{font-family:'Malgun Gothic',sans-serif;background:#f0f4f8;min-height:100vh}
 
 .emg-title{font-size:13px;font-weight:700;color:#1e293b;margin:8px 0 4px;display:flex;align-items:center;gap:6px}
 .ppe-thumb{width:28px;height:28px;object-fit:contain;flex-shrink:0}
+.ppe-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:10px;text-align:center}
+.ppe-img{width:72px;height:72px;object-fit:contain;display:block;margin:0 auto 6px}
+.ppe-card-title{font-size:13px;font-weight:700;color:#1e293b;margin-bottom:6px}
+.ppe-card .alert{text-align:left;margin:0}
 
 .back-btn{display:flex;align-items:center;gap:6px;padding:10px 14px;background:white;border:none;border-bottom:1px solid #e2e8f0;font-size:13px;color:#2563eb;cursor:pointer;width:100%}
 
@@ -420,10 +424,26 @@ ${c.warn?`
 
       <button class="sec-btn" onclick="tog('${sid}_ppe2')"><span>🦺 보호구 (8항)</span><span class="arr open" id="sa${sid}_ppe2">▼</span></button>
       <div class="sec-body open" id="sb${sid}_ppe2">
-        <div class="emg-title">${respImg(c.id)?`<img src="${respImg(c.id)}" class="ppe-thumb" alt="호흡보호구">`:''}호흡기 보호</div><div class="alert alert-blu">${c.ppe.resp}</div>
-        <div class="emg-title"><img src="${PPE.GOGGLE}" class="ppe-thumb" alt="눈보호구">눈 보호</div><div class="alert alert-blu">${c.ppe.eye}</div>
-        <div class="emg-title"><img src="${PPE.GLOVE}" class="ppe-thumb" alt="손보호구">손 보호</div><div class="alert alert-blu">${c.ppe.hand}</div>
-        <div class="emg-title"><img src="${PPE.SUIT}" class="ppe-thumb" alt="신체보호구">신체 보호</div><div class="alert alert-blu">${c.ppe.body}</div>
+        <div class="ppe-card">
+          ${respImg(c.id)?`<img src="${respImg(c.id)}" class="ppe-img">`:''}
+          <div class="ppe-card-title">호흡기 보호</div>
+          <div class="alert alert-blu">${c.ppe.resp}</div>
+        </div>
+        <div class="ppe-card">
+          <img src="${PPE.GOGGLE}" class="ppe-img">
+          <div class="ppe-card-title">눈 보호</div>
+          <div class="alert alert-blu">${c.ppe.eye}</div>
+        </div>
+        <div class="ppe-card">
+          <img src="${PPE.GLOVE}" class="ppe-img">
+          <div class="ppe-card-title">손 보호</div>
+          <div class="alert alert-blu">${c.ppe.hand}</div>
+        </div>
+        <div class="ppe-card">
+          <img src="${PPE.SUIT}" class="ppe-img">
+          <div class="ppe-card-title">신체 보호</div>
+          <div class="alert alert-blu">${c.ppe.body}</div>
+        </div>
       </div>
     `;
   }
