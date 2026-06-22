@@ -355,7 +355,8 @@ function runDataCheck(){
   else oks.push('필수 항목(이름/CAS/상태/보호구) 빈값 없음');
 
   // 4. CAS 번호 형식 간단 검사 (숫자-숫자-숫자 패턴)
-  const badCas = DB.filter(c=>c.cas && !/^\d{1,7}-\d{2}-\d$/.test(c.cas) && c.cas!=='해당없음');
+  const casExceptions = ['해당없음','혼합물','영업비밀'];
+  const badCas = DB.filter(c=>c.cas && !/^\d{1,7}-\d{2}-\d$/.test(c.cas) && !casExceptions.includes(c.cas));
   if(badCas.length>0) issues.push(...badCas.map(c=>`CAS 형식 의심: ${c.id}번(${c.name}) - "${c.cas}"`));
   else oks.push('CAS 번호 형식 정상');
 
