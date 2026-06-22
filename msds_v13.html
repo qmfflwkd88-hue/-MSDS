@@ -319,7 +319,7 @@ async function renderStats(){
       <div class="stat-note">✅ 전 직원 합산 통계 (Firebase 실시간 연동)</div>
       <div class="stat-section">
         <h3>📝 최근 업데이트</h3>
-        ${(typeof CHANGELOG!=='undefined'?CHANGELOG:[]).map(c=>`
+        ${(typeof CHANGELOG!=='undefined'?CHANGELOG:[]).slice(0,5).map(c=>`
           <div class="change-row">
             <div class="change-date">${c.date}</div>
             <div class="change-note">${c.note}</div>
