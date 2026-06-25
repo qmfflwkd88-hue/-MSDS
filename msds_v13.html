@@ -105,6 +105,11 @@ body{font-family:'Malgun Gothic',sans-serif;background:#f0f4f8;min-height:100vh}
 .back-btn{display:flex;align-items:center;gap:6px;padding:10px 14px;background:white;border:none;border-bottom:1px solid #e2e8f0;font-size:13px;color:#2563eb;cursor:pointer;width:100%}
 
 .disclaimer{margin:12px 14px;padding:10px 12px;background:#fefce8;border:1px solid #fde047;border-radius:8px;font-size:16px;font-weight:600;color:#713f12;text-align:center;line-height:1.6}
+.assembly-photos{display:flex;gap:8px;margin-top:10px;justify-content:center}
+.assembly-thumb{width:48%;max-width:160px;border-radius:8px;border:1px solid #fde047;cursor:pointer;object-fit:cover}
+.assembly-caption{font-size:11px;color:#92400e;font-weight:400;margin-top:6px}
+.zoom-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
+.zoom-img{max-width:100%;max-height:100%;border-radius:8px}
 
 .no-result{background:white;border-radius:12px;padding:28px 20px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06)}
 .no-result .icon{font-size:36px;margin-bottom:10px}
@@ -193,7 +198,18 @@ body{font-family:'Malgun Gothic',sans-serif;background:#f0f4f8;min-height:100vh}
       <p>화학물질명 또는 CAS No.를 입력하세요<br>취급 전 반드시 안전정보를 확인하세요</p>
     </div>
   </div>
-  <div class="disclaimer">⚠️ 긴급상황 시 119 신고 즉시 연락<br>환경팀: 김광섭 과장 <a href="tel:01088388893">010-8838-8893</a><br>안전관리자: 박영재 대리 <a href="tel:01082842201">010-8284-2201</a><br><span style="font-size:14px;font-weight:500">📋 신고 내용: 시간 / 장소 / 내용 / 원인 / 현황 / 신고자(연락처)</span><br><span style="font-size:14px;font-weight:500">🚩 비상경보 알람 발생 시 집결지: 경비실 앞</span></div>
+  <div class="disclaimer">
+    ⚠️ 긴급상황 시 119 신고 즉시 연락<br>
+    안전관리자(박영재 대리) <a href="tel:01082842201">010-8284-2201</a><br>
+    안전환경팀(환경) 김광섭 과장 <a href="tel:01088388893">010-8838-8893</a><br>
+    <span style="font-size:14px;font-weight:500">📋 신고 내용: 시간 / 장소 / 내용 / 원인 / 현황 / 신고자(연락처)</span><br>
+    <span style="font-size:14px;font-weight:500">🚩 비상경보 알람 발생 시 집결지: 경비실 앞</span>
+    <div class="assembly-photos">
+      <img id="assemblyPhoto" class="assembly-thumb" onclick="event.stopPropagation();showAssemblyZoom(this.src)" alt="집결지 현장사진">
+      <img id="assemblyMap" class="assembly-thumb" onclick="event.stopPropagation();showAssemblyZoom(this.src)" alt="집결지 위치도">
+    </div>
+    <div class="assembly-caption">📷 사진 클릭 시 크게 보기</div>
+  </div>
 </div>
 
 <!-- 목록 탭 -->
@@ -222,6 +238,19 @@ body{font-family:'Malgun Gothic',sans-serif;background:#f0f4f8;min-height:100vh}
 <script src="msds_pict.js"></script>
 <script>
 function pictSVG(code){var u=PICT[code];return u?'<img src="'+u+'" class="ghs-pic" alt="'+code+'">':'';}
+
+// ===== 비상집결지 사진/위치도 표시 =====
+if(typeof ASSEMBLY!=='undefined'){
+  document.getElementById('assemblyPhoto').src = ASSEMBLY.PHOTO;
+  document.getElementById('assemblyMap').src = ASSEMBLY.MAP;
+}
+function showAssemblyZoom(src){
+  const overlay = document.createElement('div');
+  overlay.className = 'zoom-overlay';
+  overlay.onclick = function(){ overlay.remove(); };
+  overlay.innerHTML = '<img src="'+src+'" class="zoom-img">';
+  document.body.appendChild(overlay);
+}
 
 function dlColor(dl){return dl==='high'?'bg-high':dl==='med'?'bg-med':'bg-low'}
 function dlNum(dl){return dl==='high'?'num-high':dl==='med'?'num-med':'num-low'}
